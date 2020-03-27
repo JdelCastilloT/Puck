@@ -1,0 +1,107 @@
+
+<!-- more -->
+<div>
+ <!-- Intentando hacer trampa? Adelante -->
+ <p>Este puzzle está protegido. Por favor, introduce la contraseña en mayúsculas.</p>
+ <input type="text" placeholder="Secret Password"/>
+ <input type="button" onclick="decode(this);" value="&#161;Ábrete, Sésamo!" />
+ <span style="visibility:hidden">U2FsdGVkX19zgI91LB0TS0VWWjruK+Ev8qh6EOEd1puHMHhxHq7ty9JH0ZwjvDA0DW4EfrrWpeg5DujD1w6eQEtQqCWCjVBmj36eTBNACW/3iqUTPDAuFxo1YgtbHv9zeHwm4eiwMzaMRzXCsuavlMhltR7j00B6eXj0IHiaLk0=</span>
+ <span style="visibility:hidden">94860b86609eab9e8da9f992214f3234</span>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+ <script>
+  var respuestas = ['\u00BFSeguro que sabes la contrase\u00F1a?', 'Sigue probando', '\u00C9sa ha sido la tonter\u00EDa m\u00E1s grande que he visto', 'Prueba, prueba', 'Contrase\u00F1a incorrecta', 'No, prueba otra vez'];
+  function decode(element) {
+   try {
+    var text = CryptoJS.AES.decrypt(
+     element.nextElementSibling.innerHTML,
+     element.previousElementSibling.value
+    ).toString(CryptoJS.enc.Utf8);
+    if (CryptoJS.MD5(text).toString() == element.nextElementSibling.nextElementSibling.innerHTML) {
+     var parent = element.parentElement;
+     parent.innerHTML = text;
+     runScripts(parent);
+    } else {
+     throw ".";
+    }
+   } catch (e) {
+    element.value = respuestas[Math.floor(Math.random()*respuestas.length)];
+   }
+
+  }
+
+  function runScripts(element) {
+   // https://stackoverflow.com/a/17381236
+   var scripts;
+
+   // Get the scripts
+   scripts = element.getElementsByTagName("script");
+
+   // Run them in sequence (remember NodeLists are live)
+   continueLoading();
+
+   function continueLoading() {
+    var script, newscript;
+
+    // While we have a script to load...
+    while (scripts.length) {
+     // Get it and remove it from the DOM
+     script = scripts[0];
+     script.parentNode.removeChild(script);
+
+     // Create a replacement for it
+     newscript = document.createElement('script');
+
+     // External?
+     if (script.src) {
+      // Yes, we'll have to wait until it's loaded before continuing
+      newscript.onerror = continueLoadingOnError;
+      newscript.onload = continueLoadingOnLoad;
+      newscript.onreadystatechange = continueLoadingOnReady;
+      newscript.src = script.src;
+     } else {
+      // No, we can do it right away
+      newscript.text = script.text;
+     }
+
+     // Start the script
+     document.documentElement.appendChild(newscript);
+
+     // If it's external, wait for callback
+     if (script.src) {
+      return;
+     }
+    }
+
+    // All scripts loaded
+    newscript = undefined;
+
+    // Callback on most browsers when a script is loaded
+    function continueLoadingOnLoad() {
+     // Defend against duplicate calls
+     if (this === newscript) {
+      continueLoading();
+     }
+    }
+
+    // Callback on most browsers when a script fails to load
+    function continueLoadingOnError() {
+     // Defend against duplicate calls
+     if (this === newscript) {
+      continueLoading();
+     }
+    }
+
+    // Callback on IE when a script's loading status changes
+    function continueLoadingOnReady() {
+
+     // Defend against duplicate calls and check whether the
+     // script is complete (complete = loaded or error)
+     if (this === newscript && this.readyState === "complete") {
+      continueLoading();
+     }
+    }
+   }
+  }
+ </script>
+</div>
+ 
